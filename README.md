@@ -4,3 +4,5 @@ This is an interactive setup to see how the addition of edges to a graph affects
 To run:
 - $python app.py
 - put "http://127.0.0.1:5000" in the browser
+
+![Screenshot](overview_photo.pdf)
