@@ -5,4 +5,4 @@ To run:
 - $python app.py
 - put "http://127.0.0.1:5000" in the browser
 
-![Screenshot](overview_photo.pdf)
+![overview_photo](overview_photo.pdf)
