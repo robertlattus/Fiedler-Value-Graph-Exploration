@@ -35,6 +35,7 @@
         .graph-container {
             width: 100%;
             max-width: 600px;
+            position: relative;
         }
         .fiedler-values {
             margin-bottom: 10px;
@@ -44,6 +45,22 @@
             color: green;
             margin-top: 5px;
             min-height: 20px;
+        }
+        #nextButton {
+            position: absolute;
+            right: 10px;
+            bottom: -50px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #nextButton:disabled {
+            background-color: gray;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -55,12 +72,10 @@
 
         <div class="controls">
             <label for="numNodes">Select Number of Nodes:</label>
-            <select id="numNodes">
+            <select id="numNodes" onchange="resetGraph()">
                 <option value="4">4</option>
                 <option value="5" selected>5</option>
                 <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
             </select>
             <button onclick="initializeGraph()">Generate Graph</button>
         </div>
@@ -74,6 +89,7 @@
 
         <div class="graph-container">
             <div id="graph"></div>
+            <button id="nextButton" onclick="generateNextGraph()" disabled>Next</button>
         </div>
     </div>
 

@@ -25,6 +25,7 @@ def create_graph(graph_type, num_nodes):
 
     return G
 
+import gc
 def compute_fiedler_value(G):
     """Computes the Fiedler value (2nd smallest eigenvalue of the Laplacian)."""
     if nx.number_of_edges(G) == 0:
@@ -32,7 +33,13 @@ def compute_fiedler_value(G):
     
     L = nx.laplacian_matrix(G).toarray()
     eigenvalues = np.linalg.eigvalsh(L)
-    return round(eigenvalues[1], 4) if len(eigenvalues) > 1 else 0
+    if len(eigenvalues) > 1:
+        Fv = round(eigenvalues[1], 4)
+    else:
+        Fv = 0
+    del L, eigenvalues
+    gc.collect()
+    return Fv
 
 @app.route("/")
 def index():
@@ -44,25 +51,43 @@ def initialize_graph():
     """Handles graph initialization from the frontend."""
     global graph_type, num_nodes, edges, target_fiedler_value
     data = request.get_json()
-    graph_type = data["graphType"]
-    num_nodes = data["numNodes"]
+    
+    graph_type = data.get("graphType", "complete")
+    num_nodes = data.get("numNodes", 5)
+    required_toggles = data.get("requiredToggles", 1)  # Default to 1 if missing
 
     G = create_graph(graph_type, num_nodes)
-    edges = []  # Start with no real edges
     possible_edges = list(G.edges())
 
-    # Ensure the selected target Fiedler value is greater than 0
+    # Ensure an initial graph where toggling 'required_toggles' edges will match the target
+    temp_G = nx.Graph()
+    temp_G.add_nodes_from(range(num_nodes))
+    chosen_edges = random.sample(possible_edges, max(1, len(possible_edges) // 2))
+    temp_G.add_edges_from(chosen_edges)
+    
+    # Compute a valid target Fiedler value
     while True:
-        temp_G = nx.Graph()
-        temp_G.add_nodes_from(range(num_nodes))
-        chosen_edges = random.sample(possible_edges, max(1, len(possible_edges) // 2))
-        temp_G.add_edges_from(chosen_edges)
         target_fiedler_value = compute_fiedler_value(temp_G)
-        
         if target_fiedler_value > 0:
-            break  # Only accept positive target Fiedler values
+            break
+    
+    # Modify the graph to require exactly `required_toggles` edge changes
+    initial_edges = chosen_edges[:]
+    for _ in range(required_toggles):
+        if initial_edges:
+            initial_edges.pop()  # Remove edges to force the needed toggles
+    new_G = nx.Graph()
+    new_G.add_nodes_from(range(num_nodes))
+    new_G.add_edges_from(initial_edges)
 
-    return jsonify({"possibleEdges": possible_edges, "targetFiedlerValue": target_fiedler_value})
+    return jsonify({
+    	"possibleEdges": possible_edges,
+    	"initialEdges": initial_edges,
+    	"targetFiedlerValue": target_fiedler_value,
+    	"initialFiedlerValue": compute_fiedler_value(new_G)  # Send the computed value
+	})
+
+
 
 
 @app.route("/update_graph", methods=["POST"])
