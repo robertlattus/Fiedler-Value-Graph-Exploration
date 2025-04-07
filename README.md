@@ -6,3 +6,5 @@ To run:
 - put "http://127.0.0.1:5000" in the browser
 
 ![overview_photo](overview_photo.png)
+
+NOTE: Much of the code was constructed with the aid of ChatGPT!
